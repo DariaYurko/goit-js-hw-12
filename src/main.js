@@ -18,11 +18,12 @@ const loader = document.querySelector('.loader');
 const searchBtnEl = document.querySelector('.search-form__button');
 const showMoreBtnEl = document.querySelector('.show-more__button');
 
-let query = null;
-let newQuery = null;
-
-// Controls the group number
+export const perPage = 3;
 export let pageNumber = 1;
+
+let data = null;
+let query;
+
 // ---------------------------------------------------------
 
 function clearGallery() {
@@ -33,19 +34,40 @@ function increasePage() {
   pageNumber = pageNumber + 1;
 }
 
+function checkEndPages(totalPages) {
+  if (pageNumber > totalPages) {
+    return iziToast.error({
+      class: 'izt-toast-message',
+      message: "We're sorry, but you've reached the end of search results.",
+      messageSize: '16',
+      messageLineHeight: '24',
+      messageColor: '#ffffff',
+
+      backgroundColor: '#b51b1b',
+      iconUrl: iconClose,
+      position: 'topRight',
+      theme: 'dark',
+    });
+  }
+}
+
 // ---------- Search button's actions-----------------------------------------------
 
 formEl.addEventListener('submit', async event => {
   event.preventDefault();
 
-  query = event.target.elements.query.value.trim();
+  const valueOfInput = event.target.elements.query.value.trim();
+  query = valueOfInput;
+
+  pageNumber = 1;
+  console.log(pageNumber);
 
   if (query.length !== 0) {
     addLoader(loader);
 
     try {
-      const data = await sendQuery(query); // {total: 24170, totalHits: 500, hits: Array(3)}
-      console.log(data);
+      data = await sendQuery(query); // {total: 24170, totalHits: 500, hits: Array(3)}
+      // console.log(data);
 
       // ---------------- If the data.hits === [] ---------
 
@@ -72,15 +94,8 @@ formEl.addEventListener('submit', async event => {
         // ------------- If the data.hits not empty =========================================
       } else {
         ulEl.insertAdjacentHTML('beforeend', renderCards(data.hits));
-
         increasePage();
-        console.log('page Number - ', pageNumber);
-
-        // searchBtnEl.disabled = true;
-        console.log('query - ', query);
-
-        // if(query === )
-
+        console.log(pageNumber);
         showMoreBtnEl.classList.add('active');
       }
       // -----------------------------------------============================================
@@ -97,9 +112,12 @@ formEl.addEventListener('submit', async event => {
 
 // ----- Show-more button's actions
 showMoreBtnEl.addEventListener('click', async e => {
-  console.log('query - ', query);
+  //   Кількість груп в колекції
+  const totalPages = Math.ceil(data.totalHits / perPage);
 
-  const data = await sendQuery(query);
+  checkEndPages(totalPages);
+
+  data = await sendQuery(query);
 
   ulEl.insertAdjacentHTML('beforeend', renderCards(data.hits));
 
@@ -107,11 +125,3 @@ showMoreBtnEl.addEventListener('click', async e => {
   console.log(pageNumber);
 });
 // ------------------------------------
-
-// formEl.addEventListener('input', () => {
-//   let query = formEl.elements.query.value;
-
-//   newQuery = query;
-// });
-
-// console.log('new query - ', newQuery);

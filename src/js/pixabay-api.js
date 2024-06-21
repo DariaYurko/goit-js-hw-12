@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { pageNumber } from '../main';
+import { pageNumber, perPage } from '../main';
 
 /**
  *
@@ -15,7 +15,7 @@ export async function sendQuery(imageName) {
     image_type: 'photo',
     orientation: 'horizontal',
     safesearch: true,
-    per_page: 3,
+    per_page: perPage,
     page: pageNumber,
   };
 
