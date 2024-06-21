@@ -15,14 +15,14 @@ const formEl = document.querySelector('.search-form');
 const inputEl = document.querySelector('.search-form__input');
 const ulEl = document.querySelector('.gallery');
 const loader = document.querySelector('.loader');
-const searchBtnEl = document.querySelector('.search-form__button');
 const loadMoreBtnEl = document.querySelector('.load-more__button');
 
-export const perPage = 6;
+export const perPage = 15;
 export let pageNumber = 1;
 
 let data = null;
 let query;
+let gallery;
 
 // ---------------------------------------------------------
 
@@ -31,11 +31,15 @@ function clearGallery() {
 }
 
 function increasePage() {
-  pageNumber = pageNumber + 1;
+  return (pageNumber = pageNumber + 1);
 }
 
 function hideLoadMoreBtn() {
   loadMoreBtnEl.classList.remove('active');
+}
+
+function resetPageNumber() {
+  return (pageNumber = 1);
 }
 
 function checkEndPages(totalPages) {
@@ -64,8 +68,7 @@ formEl.addEventListener('submit', async event => {
   const valueOfInput = event.target.elements.query.value.trim();
   query = valueOfInput;
 
-  pageNumber = 1;
-
+  resetPageNumber();
   hideLoadMoreBtn();
 
   if (query.length !== 0) {
@@ -73,7 +76,6 @@ formEl.addEventListener('submit', async event => {
 
     try {
       data = await sendQuery(query); // {total: 24170, totalHits: 500, hits: Array(3)}
-      // console.log(data);
 
       // ---------------- If the data.hits === [] ---------
 
@@ -104,6 +106,9 @@ formEl.addEventListener('submit', async event => {
         ulEl.insertAdjacentHTML('beforeend', renderCards(data.hits));
         increasePage();
 
+        gallery = new SimpleLightbox('.gallery a');
+        gallery.refresh();
+
         loadMoreBtnEl.classList.add('active');
       }
       // -----------------------------------------
@@ -129,8 +134,8 @@ loadMoreBtnEl.addEventListener('click', async e => {
   data = await sendQuery(query);
 
   ulEl.insertAdjacentHTML('beforeend', renderCards(data.hits));
+  gallery.refresh();
 
   increasePage();
-  console.log(pageNumber);
 });
 // ---------------------------------------------
