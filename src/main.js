@@ -18,7 +18,7 @@ const loader = document.querySelector('.loader');
 const searchBtnEl = document.querySelector('.search-form__button');
 const loadMoreBtnEl = document.querySelector('.load-more__button');
 
-export const perPage = 150;
+export const perPage = 6;
 export let pageNumber = 1;
 
 let data = null;
@@ -65,7 +65,8 @@ formEl.addEventListener('submit', async event => {
   query = valueOfInput;
 
   pageNumber = 1;
-  console.log(pageNumber);
+
+  hideLoadMoreBtn();
 
   if (query.length !== 0) {
     addLoader(loader);
@@ -102,7 +103,7 @@ formEl.addEventListener('submit', async event => {
 
         ulEl.insertAdjacentHTML('beforeend', renderCards(data.hits));
         increasePage();
-        console.log(pageNumber);
+
         loadMoreBtnEl.classList.add('active');
       }
       // -----------------------------------------
@@ -130,7 +131,6 @@ loadMoreBtnEl.addEventListener('click', async e => {
   ulEl.insertAdjacentHTML('beforeend', renderCards(data.hits));
 
   increasePage();
-   console.log(pageNumber);
-
+  console.log(pageNumber);
 });
 // ---------------------------------------------
