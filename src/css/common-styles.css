@@ -64,11 +64,11 @@ body {
    background-color: #b3bbd9;
 }
 
-.show-more__button {
+.load-more__button {
    display: none;
 }
 
-.show-more__button.active {
+.load-more__button.active {
    display: block;
    margin: 0 auto;
 }

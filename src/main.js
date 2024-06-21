@@ -16,9 +16,9 @@ const inputEl = document.querySelector('.search-form__input');
 const ulEl = document.querySelector('.gallery');
 const loader = document.querySelector('.loader');
 const searchBtnEl = document.querySelector('.search-form__button');
-const showMoreBtnEl = document.querySelector('.show-more__button');
+const loadMoreBtnEl = document.querySelector('.load-more__button');
 
-export const perPage = 3;
+export const perPage = 150;
 export let pageNumber = 1;
 
 let data = null;
@@ -34,8 +34,13 @@ function increasePage() {
   pageNumber = pageNumber + 1;
 }
 
+function hideLoadMoreBtn() {
+  loadMoreBtnEl.classList.remove('active');
+}
+
 function checkEndPages(totalPages) {
   if (pageNumber > totalPages) {
+    hideLoadMoreBtn();
     return iziToast.error({
       class: 'izt-toast-message',
       message: "We're sorry, but you've reached the end of search results.",
@@ -51,7 +56,7 @@ function checkEndPages(totalPages) {
   }
 }
 
-// ---------- Search button's actions-----------------------------------------------
+// ---------- Submit actions-----------------------------------------------
 
 formEl.addEventListener('submit', async event => {
   event.preventDefault();
@@ -91,14 +96,16 @@ formEl.addEventListener('submit', async event => {
         // ----- Clear the gallery
         clearGallery();
 
-        // ------------- If the data.hits not empty =========================================
+        // ------------- If the data.hits not empty
       } else {
+        clearGallery();
+
         ulEl.insertAdjacentHTML('beforeend', renderCards(data.hits));
         increasePage();
         console.log(pageNumber);
-        showMoreBtnEl.classList.add('active');
+        loadMoreBtnEl.classList.add('active');
       }
-      // -----------------------------------------============================================
+      // -----------------------------------------
     } catch (err) {
       console.log(err);
     }
@@ -110,8 +117,9 @@ formEl.addEventListener('submit', async event => {
 });
 // ------------------------------------------------
 
-// ----- Show-more button's actions
-showMoreBtnEl.addEventListener('click', async e => {
+// -------------------- Click button's actions
+
+loadMoreBtnEl.addEventListener('click', async e => {
   //   Кількість груп в колекції
   const totalPages = Math.ceil(data.totalHits / perPage);
 
@@ -122,6 +130,7 @@ showMoreBtnEl.addEventListener('click', async e => {
   ulEl.insertAdjacentHTML('beforeend', renderCards(data.hits));
 
   increasePage();
-  console.log(pageNumber);
+   console.log(pageNumber);
+
 });
-// ------------------------------------
+// ---------------------------------------------
