@@ -17,12 +17,13 @@ const ulEl = document.querySelector('.gallery');
 const loader = document.querySelector('.loader');
 const loadMoreBtnEl = document.querySelector('.load-more__button');
 
-export const perPage = 15;
+export const perPage = 3;
 export let pageNumber = 1;
 
-let data = null;
-let query;
+let data;
+let query = '';
 let gallery;
+let totalPages;
 
 // ---------------------------------------------------------
 
@@ -37,14 +38,18 @@ function increasePage() {
 function hideLoadMoreBtn() {
   loadMoreBtnEl.classList.remove('active');
 }
+function showLoadMoreBtn() {
+  loadMoreBtnEl.classList.add('active');
+}
 
 function resetPageNumber() {
   return (pageNumber = 1);
 }
 
-function checkEndPages(totalPages) {
-  if (pageNumber > totalPages) {
+function checkEndPages() {
+  if (pageNumber >= totalPages) {
     hideLoadMoreBtn();
+
     return iziToast.error({
       class: 'izt-toast-message',
       message: "We're sorry, but you've reached the end of search results.",
@@ -57,10 +62,22 @@ function checkEndPages(totalPages) {
       position: 'topRight',
       theme: 'dark',
     });
+  } else {
+    showLoadMoreBtn();
   }
 }
 
-// ---------- Submit actions-----------------------------------------------
+function scrollElem() {
+  const liEl = ulEl.children[0];
+  const heightOfLiEl = liEl.getBoundingClientRect().height;
+
+  window.scrollBy({
+    top: heightOfLiEl * 2,
+    behavior: 'smooth',
+  });
+}
+
+// ---------- Submit actions -----------------------------------------------
 
 formEl.addEventListener('submit', async event => {
   event.preventDefault();
@@ -69,18 +86,19 @@ formEl.addEventListener('submit', async event => {
   query = valueOfInput;
 
   resetPageNumber();
+
   hideLoadMoreBtn();
 
   if (query.length !== 0) {
     addLoader(loader);
 
     try {
-      data = await sendQuery(query); // {total: 24170, totalHits: 500, hits: Array(3)}
+      data = await sendQuery(query, pageNumber); // {total: 24170, totalHits: 500, hits: Array(3)}
 
-      // ---------------- If the data.hits === [] ---------
+      totalPages = Math.ceil(data.totalHits / perPage);
 
       if (data.hits.length === 0) {
-        // ----- Using the library iziToast for message
+        // ----- Using the library iziToast for message if [] === 0
         iziToast.show({
           class: 'izt-toast-message',
 
@@ -96,20 +114,21 @@ formEl.addEventListener('submit', async event => {
           theme: 'dark',
         });
 
-        // ----- Clear the gallery
+        // ------------- Clear the gallery
         clearGallery();
 
         // ------------- If the data.hits not empty
       } else {
         clearGallery();
 
-        ulEl.insertAdjacentHTML('beforeend', renderCards(data.hits));
+        ulEl.innerHTML = renderCards(data.hits);
         increasePage();
 
         gallery = new SimpleLightbox('.gallery a');
         gallery.refresh();
 
-        loadMoreBtnEl.classList.add('active');
+        // showLoadMoreBtn();
+        checkEndPages();
       }
       // -----------------------------------------
     } catch (err) {
@@ -125,17 +144,20 @@ formEl.addEventListener('submit', async event => {
 
 // -------------------- Click button's actions
 
-loadMoreBtnEl.addEventListener('click', async e => {
-  //   Кількість груп в колекції
-  const totalPages = Math.ceil(data.totalHits / perPage);
-
-  checkEndPages(totalPages);
-
-  data = await sendQuery(query);
-
-  ulEl.insertAdjacentHTML('beforeend', renderCards(data.hits));
-  gallery.refresh();
-
+loadMoreBtnEl.addEventListener('click', async () => {
   increasePage();
+
+  try {
+    data = await sendQuery(query, pageNumber);
+    addLoader(loader);
+    ulEl.insertAdjacentHTML('beforeend', renderCards(data.hits));
+    gallery.refresh();
+    scrollElem();
+    removeLoader(loader);
+
+    checkEndPages(totalPages);
+  } catch (err) {
+    console.log(err);
+  }
 });
 // ---------------------------------------------

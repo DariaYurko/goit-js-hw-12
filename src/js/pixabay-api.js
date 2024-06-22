@@ -1,12 +1,12 @@
 import axios from 'axios';
-import { pageNumber, perPage } from '../main';
+import { perPage } from '../main';
 
 /**
  *
  * @param {String} query
  * @returns {Object}
  */
-export async function sendQuery(imageName) {
+export async function sendQuery(imageName, pageNumber) {
   axios.defaults.baseURL = 'https://pixabay.com';
 
   const params = {
