@@ -20,9 +20,9 @@ const loadMoreBtnEl = document.querySelector('.load-more__button');
 export const perPage = 15;
 export let pageNumber = 1;
 
-let data;
+// let data;
 let query = '';
-let gallery;
+let gallery = new SimpleLightbox('.gallery a');
 let totalPages;
 
 // ---------------------------------------------------------
@@ -93,8 +93,7 @@ formEl.addEventListener('submit', async event => {
     addLoader(loader);
 
     try {
-      data = await sendQuery(query, pageNumber); // {total: 24170, totalHits: 500, hits: Array(3)}
-
+      const data = await sendQuery(query, pageNumber); // {total: 24170, totalHits: 500, hits: Array(3)}
       totalPages = Math.ceil(data.totalHits / perPage);
 
       if (data.hits.length === 0) {
@@ -120,23 +119,16 @@ formEl.addEventListener('submit', async event => {
         // ------------- If the data.hits not empty
       } else {
         clearGallery();
-
         ulEl.innerHTML = renderCards(data.hits);
-        increasePage();
-
-        gallery = new SimpleLightbox('.gallery a');
         gallery.refresh();
-
         checkEndPages();
       }
       // -----------------------------------------
     } catch (err) {
       console.log(err);
     }
-
     removeLoader(loader);
   }
-
   formEl.reset();
 });
 // ------------------------------------------------
@@ -144,15 +136,15 @@ formEl.addEventListener('submit', async event => {
 // -------------------- Click button's actions
 
 loadMoreBtnEl.addEventListener('click', async () => {
-  increasePage();
-
   try {
-    data = await sendQuery(query, pageNumber);
+    const data = await sendQuery(query, pageNumber);
     addLoader(loader);
+
     ulEl.insertAdjacentHTML('beforeend', renderCards(data.hits));
     gallery.refresh();
     scrollElem();
     removeLoader(loader);
+    increasePage();
 
     checkEndPages(totalPages);
   } catch (err) {
